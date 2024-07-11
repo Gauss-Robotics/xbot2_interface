@@ -5,6 +5,10 @@
 #include <urdf_model/model.h>
 #include <srdfdom/model.h>
 
+#include <iostream>
+#include <list>
+#include <set>
+
 #include "chain.h"
 #include "joint.h"
 #include "imu.h"
