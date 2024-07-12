@@ -49,6 +49,7 @@ target_link_libraries(xbot2_interface
     PUBLIC
     ${urdf_LIBRARIES}
     ${srdfdom_LIBRARIES}
+    srdfdom::srdfdom
     Eigen3::Eigen)
 
 target_compile_options(xbot2_interface
@@ -106,7 +107,7 @@ if(${XBOT2_IFC_BUILD_COLLISION})
     add_subdirectory(src/collision/)
 endif()
 
-#add_subdirectory(python)
+add_subdirectory(python)
 
 #add_subdirectory(examples)
 

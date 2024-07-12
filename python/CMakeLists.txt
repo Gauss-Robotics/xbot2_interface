@@ -9,11 +9,7 @@ if(${pybind11_FOUND} AND ${COMPILE_PYTHON_BINDINGS})
     message(STATUS "Found python (${Python3_EXECUTABLE}) will compile python bindings")
 
     # get python install path
-    execute_process(
-        COMMAND ${Python3_EXECUTABLE} -c "import site, os; print(os.path.relpath(site.USER_SITE, site.USER_BASE))"
-        OUTPUT_VARIABLE PYTHON_SITE
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+    set(PYTHON_SITE "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/dist-packages")
     message(STATUS "Python install dir: ${PYTHON_SITE}")
 
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
