@@ -5,6 +5,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
+#include <pybind11/chrono.h>
 
 using namespace XBot;
 namespace py = pybind11;
@@ -375,6 +376,8 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
         ;
 
     py::class_<ForceTorqueSensor, Sensor>(m, "ForceTorqueSensor")
+        .def(py::init<std::string>())
+        .def("setMeasurement",&ForceTorqueSensor::setMeasurement)
         .def("getWrench",
              py::overload_cast<>(&ForceTorqueSensor::getWrench, py::const_))
         ;
