@@ -357,7 +357,7 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
 
 
 
-    py::class_<Sensor>(m, "Sensor")
+    py::class_<Sensor, std::shared_ptr<Sensor> >(m, "Sensor")
         .def("getName",
              &Sensor::getName)
         .def("getTimestamp",
@@ -366,7 +366,7 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
              &Sensor::isUpdated)
         ;
 
-    py::class_<ImuSensor, Sensor>(m, "ImuSensor")
+    py::class_<ImuSensor, std::shared_ptr<ImuSensor>, Sensor>(m, "ImuSensor")
         .def("getAngularVelocity",
              py::overload_cast<>(&ImuSensor::getAngularVelocity, py::const_))
         .def("getLinearAcceleration",
@@ -375,7 +375,7 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
              py::overload_cast<>(&ImuSensor::getOrientation, py::const_))
         ;
 
-    py::class_<ForceTorqueSensor, Sensor>(m, "ForceTorqueSensor")
+    py::class_<ForceTorqueSensor, std::shared_ptr<ForceTorqueSensor>, Sensor>(m, "ForceTorqueSensor")
         .def(py::init<std::string>())
         .def("setMeasurement",&ForceTorqueSensor::setMeasurement)
         .def("getWrench",
