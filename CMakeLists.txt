@@ -11,6 +11,8 @@ option(XBOT2_IFC_BUILD_TESTS "Build tests" OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(ROS_DISTRO $ENV{ROS_DISTRO} )
+set(SRDFDOM_INCLUDE_DIR /opt/ros/${ROS_DISTRO}/include)
 set(CMAKE_INSTALL_RPATH $ORIGIN)
 set(CMAKE_BUILD_RPATH "$ORIGIN;$ORIGIN/pinocchio;$ORIGIN/rbdl;$ORIGIN/ros")
 
@@ -47,6 +49,7 @@ target_link_libraries(xbot2_interface
     PUBLIC
     ${urdf_LIBRARIES}
     ${srdfdom_LIBRARIES}
+    srdfdom::srdfdom
     Eigen3::Eigen)
 
 target_compile_options(xbot2_interface
@@ -63,6 +66,7 @@ target_compile_definitions(xbot2_interface
 
 target_include_directories(xbot2_interface
     PUBLIC
+    ${SRDFDOM_INCLUDE_DIR}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
@@ -96,7 +100,7 @@ if(${XBOT2_IFC_BUILD_RBDL})
 endif()
 
 if(${XBOT2_IFC_BUILD_ROS})
-    add_subdirectory(ros/)
+    #add_subdirectory(ros/)
 endif()
 
 if(${XBOT2_IFC_BUILD_COLLISION})
@@ -105,7 +109,7 @@ endif()
 
 add_subdirectory(python)
 
-add_subdirectory(examples)
+#add_subdirectory(examples)
 
 if(${XBOT2_IFC_BUILD_TESTS})
 	enable_testing()
