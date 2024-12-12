@@ -3,6 +3,8 @@
 
 #include "impl/load_object.h"
 
+#include <iostream>
+
 using namespace XBot;
 
 bool RobotInterface::sense(bool update_model)
@@ -34,7 +36,7 @@ RobotInterface::UniquePtr RobotInterface::getRobot(ConfigOptions opt)
 {
     auto mdl = ModelInterface::getModel(opt);
 
-    std::string robot_type = "ros";
+    std::string robot_type = "ros2";
 
     opt.get_parameter("robot_type", robot_type);
 

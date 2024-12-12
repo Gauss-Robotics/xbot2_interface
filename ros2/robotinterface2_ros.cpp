@@ -1,67 +1,75 @@
 #include "robotinterface2_ros.h"
 #include "config_from_param.hpp"
 #include <xbot2_interface/common/plugin.h>
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.hpp>
+#include <chrono>
 
 using namespace XBot;
 
 RobotInterface2Ros::RobotInterface2Ros(std::unique_ptr<ModelInterface> model):
     RobotInterface(std::move(model)),
-    _nh("xbotcore"),
     _js_received(false)
 {
-    _nh.setCallbackQueue(&_cbq);
+    auto time_ns = std::chrono::steady_clock::now().time_since_epoch().count();
+    _node = rclcpp::Node::make_shared("robot_ifc_" + std::to_string(time_ns));
 
-    _js_sub = _nh.subscribe("joint_states", 1,
-                            &RobotInterface2Ros::on_js_recv, this,
-                            ros::TransportHints().udp().tcpNoDelay());
+    /* Connect to joint states */
+    auto js_sub = _node->create_subscription<JointState>("xbotcore/joint_states",
+                                                         rclcpp::SensorDataQoS(),
+                                                         [this](JointState::ConstSharedPtr msg) {
+                                                             on_js_recv(msg);
+                                                         });
 
-    _cmd_pub = _nh.advertise<xbot_msgs::JointCommand>("command", 10);
+    _subs.push_back(js_sub);
+
+    /* Connect to command topic */
+    _cmd_pub = _node->create_publisher<JointCommand>("xbotcore/command",
+                                                     rclcpp::SensorDataQoS());
 
     auto jfb = getJoint(0);
     if(jfb->getType() == urdf::Joint::FLOATING)
     {
-        _base_cmd_pub = _nh.advertise<geometry_msgs::TwistStamped>(jfb->getChildLink() + "/cmd_vel", 1);
+        _base_cmd_pub = _node->create_publisher<Twist>(jfb->getChildLink() + "/cmd_vel", 1);
     }
 
-    ROS_INFO("started listening to joint states..");
+    RCLCPP_INFO(_node->get_logger(), "started listening to joint states..");
     int niter = 0;
     while(!_js_received && niter++ < 100)
     {
-        _cbq.callAvailable();
-        ros::Duration(0.01).sleep();
+        rclcpp::spin_some(_node);
+        _node->get_clock()->sleep_for(10ms);
     }
 
     if(!_js_received)
     {
-        throw std::runtime_error("no joint message received from topic: " + _js_sub.getTopic());
+        throw std::runtime_error("no joint message received from topic: " + std::string(js_sub->get_topic_name()));
     }
 
-    ROS_INFO("got joint states!");
+    RCLCPP_INFO(_node->get_logger(), "got joint states!");
 
     // imu
     auto imu_map = getImuNonConst();
 
     for(auto [name, imu] : imu_map)
     {
-        auto cb = [imu](const sensor_msgs::ImuConstPtr& msg)
+	    auto imu0 = imu;  // some compilers cannot capture structured bindings...
+
+        auto cb = [imu0](Imu::ConstSharedPtr msg)
         {
             wall_time ts = wall_time() +
                            std::chrono::seconds(msg->header.stamp.sec) +
-                           std::chrono::nanoseconds(msg->header.stamp.nsec);
+                           std::chrono::nanoseconds(msg->header.stamp.nanosec);
 
-            imu->setMeasurement(
+            imu0->setMeasurement(
                 Eigen::Vector3d::Map(&msg->angular_velocity.x),
                 Eigen::Vector3d::Map(&msg->linear_acceleration.x),
                 Eigen::Quaterniond(&msg->orientation.x),
                 ts);
         };
 
-        auto sub = _nh.subscribe<sensor_msgs::Imu>("imu/" + name,
-                                                   1,
-                                                   cb,
-                                                   nullptr,
-                                                   ros::TransportHints().tcpNoDelay(true));
+        auto sub = _node->create_subscription<Imu>("imu/" + name,
+                                                   rclcpp::SensorDataQoS(),
+                                                   cb);
 
         _subs.push_back(sub);
     }
@@ -71,23 +79,22 @@ RobotInterface2Ros::RobotInterface2Ros(std::unique_ptr<ModelInterface> model):
 
     for(auto [name, ft] : ft_map)
     {
-        auto cb = [ft](const geometry_msgs::WrenchStampedConstPtr& msg)
+	    auto ft0 = ft;  // some compilers cannot capture structured bindings...
+	    
+        auto cb = [ft0](WrenchStamped::ConstSharedPtr msg)
         {
             wall_time ts = wall_time() +
                            std::chrono::seconds(msg->header.stamp.sec) +
-                           std::chrono::nanoseconds(msg->header.stamp.nsec);
+                           std::chrono::nanoseconds(msg->header.stamp.nanosec);
 
-            ft->setMeasurement(
+            ft0->setMeasurement(
                 Eigen::Vector6d::Map(&msg->wrench.force.x),
                 ts);
         };
 
-        auto sub = _nh.subscribe<geometry_msgs::WrenchStamped>(
-            "ft/" + name,
-            1,
-            cb,
-            nullptr,
-            ros::TransportHints().tcpNoDelay(true));
+        auto sub = _node->create_subscription<WrenchStamped>("ft/" + name,
+                                             rclcpp::SensorDataQoS(),
+                                             cb);
 
         _subs.push_back(sub);
     }
@@ -96,16 +103,16 @@ RobotInterface2Ros::RobotInterface2Ros(std::unique_ptr<ModelInterface> model):
 bool RobotInterface2Ros::sense_impl()
 {
     _js_received = false;
-    _cbq.callAvailable();
+    rclcpp::spin_some(_node);
     return _js_received;
 }
 
 bool RobotInterface2Ros::move_impl()
 {
-    xbot_msgs::JointCommand cmd;
+    JointCommand cmd;
     const int nj = getJointNum();
 
-    cmd.header.stamp = ros::Time::now();
+    cmd.header.stamp = _node->get_clock()->now();
 
     cmd.name.reserve(nj);
     cmd.position.reserve(nj);
@@ -153,7 +160,7 @@ bool RobotInterface2Ros::move_impl()
 
     if(pub_cmd)
     {
-        _cmd_pub.publish(cmd);
+        _cmd_pub->publish(cmd);
     }
 
     // handle base
@@ -161,24 +168,19 @@ bool RobotInterface2Ros::move_impl()
     if(jfb->getType() == urdf::Joint::FLOATING &&
             (jfb->getValidCommandMask()[0] & ControlMode::VELOCITY))
     {
-        geometry_msgs::TwistStamped basecmd;
-        basecmd.header.stamp = cmd.header.stamp;
-
         Eigen::Affine3d T;
         Eigen::Vector6d v;
         jfb->forwardKinematics(jfb->getPositionReference(),
                                jfb->getVelocityReference(),
                                T, v);
 
-        tf::twistEigenToMsg(v, basecmd.twist);
-
-        _base_cmd_pub.publish(basecmd);
+        _base_cmd_pub->publish(tf2::toMsg(v));
     }
 
     return true;
 }
 
-void RobotInterface2Ros::on_js_recv(xbot_msgs::JointStateConstPtr msg)
+void RobotInterface2Ros::on_js_recv(JointState::ConstSharedPtr msg)
 {
     _js_received = true;
 
@@ -216,14 +218,16 @@ void RobotInterface2Ros::on_js_recv(xbot_msgs::JointStateConstPtr msg)
 
 RobotInterface2Ros::RosInit::RosInit()
 {
-    if(!ros::isInitialized())
+    // Ros init
+    if(!rclcpp::ok())
     {
+        std::cout << "calling rclcpp::init \n";
         int argc = 0;
-        char ** argv = 0;
-        ros::init(argc, argv,
-                  "robotinterfaceros_node",
-                  ros::init_options::AnonymousName|ros::init_options::NoSigintHandler);
+        rclcpp::init(argc, nullptr,
+                     rclcpp::InitOptions(),
+                     rclcpp::SignalHandlerOptions::None);
     }
 }
 
-XBOT2_REGISTER_ROBOT_PLUGIN(RobotInterface2Ros, ros);
+XBOT2_REGISTER_ROBOT_PLUGIN(RobotInterface2Ros, ros2);
+

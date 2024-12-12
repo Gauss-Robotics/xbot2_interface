@@ -1,7 +1,6 @@
 
 find_package(hpp-fcl REQUIRED)
 find_package(geometric_shapes REQUIRED)
-find_package(moveit_core REQUIRED)
 
 add_library(collision SHARED
     collision.cpp
@@ -13,10 +12,15 @@ target_link_libraries(collision
     PRIVATE
     fmt::fmt-header-only
     hpp-fcl::hpp-fcl
-    ${moveit_core_LIBRARIES}
     ${geometric_shapes_LIBRARIES}
+    -Wl,--exclude-libs,ALL
     PUBLIC
     xbot2_interface)
+
+if(TARGET geometric_shapes::geometric_shapes)
+    target_link_libraries(collision PRIVATE geometric_shapes::geometric_shapes)
+endif()
+
 
 target_compile_options(collision
     PUBLIC
@@ -31,12 +35,8 @@ target_compile_definitions(collision
     -DXBOT2IFC_DLL
     -DXBOT2IFC_DLL_EXPORTS)
 
-# target_include_directories(collision
-#     )
-
 target_include_directories(collision
     SYSTEM PUBLIC
-    ${moveit_core_INCLUDE_DIRS}
     ${geometric_shapes_INCLUDE_DIRS}
     )
 

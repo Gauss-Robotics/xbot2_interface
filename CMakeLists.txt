@@ -5,6 +5,7 @@ project(xbot2_interface LANGUAGES CXX VERSION 1.0.0)
 option(XBOT2_IFC_BUILD_PINOCCHIO "Build Pinocchio implementation" ON)
 option(XBOT2_IFC_BUILD_RBDL "Build RBDL implementation" OFF)
 option(XBOT2_IFC_BUILD_ROS "Build ROS implementation" ON)
+option(XBOT2_IFC_BUILD_ROS2 "Build ROS2 implementation" OFF)
 option(XBOT2_IFC_BUILD_COLLISION "Build collision support (required hpp-fcl)" ON)
 option(XBOT2_IFC_BUILD_TESTS "Build tests" OFF)
 
@@ -17,6 +18,7 @@ set(CMAKE_INSTALL_RPATH $ORIGIN)
 set(CMAKE_BUILD_RPATH "$ORIGIN;$ORIGIN/pinocchio;$ORIGIN/rbdl;$ORIGIN/ros")
 
 find_package(urdf REQUIRED)
+find_package(urdfdom REQUIRED)
 find_package(srdfdom REQUIRED)
 find_package(Eigen3 REQUIRED)
 
@@ -51,6 +53,27 @@ target_link_libraries(xbot2_interface
     ${srdfdom_LIBRARIES}
     srdfdom::srdfdom
     Eigen3::Eigen)
+
+# on ros2, we need to use targets for linking
+# otherwise we use variables
+if(TARGET srdfdom::srdfdom)
+    target_link_libraries(xbot2_interface
+        PUBLIC
+        srdfdom::srdfdom
+        urdf::urdf)
+else()
+    target_include_directories(xbot2_interface
+        SYSTEM PUBLIC
+        ${srdfdom_INCLUDE_DIRS}
+        ${urdf_INCLUDE_DIRS}
+        )
+endif()
+
+# if urdfdom 4.x is used, we need to switch to different
+# code for printing urdfs
+if(urdfdom_VERSION_MAJOR GREATER_EQUAL 4)
+    add_definitions(-DXBOT2IFC_URDFDOM_USES_TINIXML2)
+endif()
 
 target_compile_options(xbot2_interface
     PUBLIC
@@ -103,6 +126,10 @@ if(${XBOT2_IFC_BUILD_ROS})
     #add_subdirectory(ros/)
 endif()
 
+if(${XBOT2_IFC_BUILD_ROS2})
+    add_subdirectory(ros2/)
+endif()
+
 if(${XBOT2_IFC_BUILD_COLLISION})
     add_subdirectory(src/collision/)
 endif()
@@ -118,3 +145,5 @@ endif()
 
 include(cmake/ExportProject.cmake)
 export_project()
+
+include(cmake/GenerateDeb.cmake)
