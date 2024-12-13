@@ -9,7 +9,9 @@ if(${pybind11_FOUND} AND ${COMPILE_PYTHON_BINDINGS})
     message(STATUS "Found python (${Python3_EXECUTABLE}) will compile python bindings")
 
     # get python install path
-    set(PYTHON_SITE "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/dist-packages")
+    #set(PYTHON_SITE "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/dist-packages")
+    set(PYTHON_SITE ".")
+    set(PY_RPATH "\\$ORIGIN/../lib")
     message(STATUS "Python install dir: ${PYTHON_SITE}")
 
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -22,6 +24,10 @@ if(${pybind11_FOUND} AND ${COMPILE_PYTHON_BINDINGS})
     install(TARGETS pyxbot2_interface
         DESTINATION ${PYTHON_SITE}/xbot2_interface)
 
+    set_target_properties(pyxbot2_interface
+       PROPERTIES
+       LINK_FLAGS "-Wl,-rpath,${PY_RPATH}"
+    )
 
     pybind11_add_module(pyaffine3 pyaffine3.cpp)
 
@@ -30,6 +36,10 @@ if(${pybind11_FOUND} AND ${COMPILE_PYTHON_BINDINGS})
     install(TARGETS pyaffine3
         DESTINATION ${PYTHON_SITE}/xbot2_interface)
 
+    set_target_properties(pyaffine3
+       PROPERTIES
+       LINK_FLAGS "-Wl,-rpath,${PY_RPATH}"
+    )
     if (${XBOT2_IFC_BUILD_COLLISION})
         pybind11_add_module(pyxbot2_collision pyxbot2_collision.cpp)
 
@@ -37,6 +47,11 @@ if(${pybind11_FOUND} AND ${COMPILE_PYTHON_BINDINGS})
 
         install(TARGETS pyxbot2_collision
             DESTINATION ${PYTHON_SITE}/xbot2_interface)
+
+        set_target_properties(pyxbot2_collision
+           PROPERTIES
+           LINK_FLAGS "-Wl,-rpath,${PY_RPATH}"
+        )
     endif()
 
     install(FILES __init__.py DESTINATION ${PYTHON_SITE}/xbot2_interface)
