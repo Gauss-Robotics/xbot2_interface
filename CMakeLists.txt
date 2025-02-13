@@ -89,7 +89,10 @@ install(
 install(DIRECTORY include/xbot2_interface
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/xbot2_interface
     )
-
+    
+if(urdfdom_VERSION_MAJOR GREATER_EQUAL 4)
+    add_definitions(-DXBOT2IFC_URDFDOM_USES_TINIXML2)
+endif()
 
 if(${XBOT2_IFC_BUILD_PINOCCHIO})
     add_subdirectory(pinocchio/)
