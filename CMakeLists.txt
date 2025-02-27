@@ -12,7 +12,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(ROS_DISTRO $ENV{ROS_DISTRO} )
-set(SRDFDOM_INCLUDE_DIR /opt/ros/${ROS_DISTRO}/include)
 set(CMAKE_INSTALL_RPATH $ORIGIN)
 set(CMAKE_BUILD_RPATH "$ORIGIN;$ORIGIN/pinocchio;$ORIGIN/rbdl;$ORIGIN/ros")
 
@@ -49,7 +48,6 @@ target_link_libraries(xbot2_interface
     PUBLIC
     ${urdf_LIBRARIES}
     ${srdfdom_LIBRARIES}
-    srdfdom::srdfdom
     Eigen3::Eigen)
 
 target_compile_options(xbot2_interface
