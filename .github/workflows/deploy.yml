@@ -1,0 +1,46 @@
+name: Build and Publish Debian Package
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-24.04
+    container:
+      image: ros:jazzy
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # We don't version control xbot2, this is just a public fork. However, for
+      # the packaging we need some version (not offered by upstream), hence, we
+      # use commit SHA.
+      - name: Set version
+        run: echo "PROJECT_VERSION=${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Install build & packaging tools
+        run: |
+          apt update
+          apt install -y ros-jazzy-srdfdom ros-jazzy-pinocchio ros-jazzy-geometric-shapes ros-jazzy-moveit-core fakeroot
+
+      - name: Configure CMake, Build and (C)Pack for DEB
+        run: |
+          cmake -S . -B build -DXBOT2_IFC_BUILD_COLLISION=OFF
+          cmake --build build -j$(nproc)
+          cmake --build build -j$(nproc)
+          fakeroot cpack --config build/CPackConfig.cmake -G DEB
+
+      - name: Set up JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v2
+        with:
+          version: latest
+
+      - name: Configure JFrog CLI
+        run: jfrog config add artifactory --url ${{ secrets.JFROG_URL }} --apikey ${{ secrets.JFROG_API_KEY }} --interactive=false
+
+      - name: Upload Debian package to Artifactory
+        run: |
+          jfrog rt upload "build/*.deb" ${{ secrets.JFROG_REPO }}/${{ env.PROJECT_VERSION }}/
