@@ -23,8 +23,8 @@ jobs:
 
       - name: Configure CMake, Build and (C)Pack for DEB
         run: |
+          . /opt/ros/jazzy/setup.sh
           cmake -S . -B build -DXBOT2_IFC_BUILD_COLLISION=OFF
-          cmake --build build -j$(nproc)
           cmake --build build -j$(nproc)
           fakeroot cpack --config build/CPackConfig.cmake -G DEB
 
