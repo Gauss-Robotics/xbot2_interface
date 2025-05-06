@@ -16,12 +16,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # We don't version control xbot2, this is just a public fork. However, for
-      # the packaging we need some version (not offered by upstream), hence, we
-      # use commit SHA.
-      - name: Set version
-        run: echo "PROJECT_VERSION=${GITHUB_SHA}" >> $GITHUB_ENV
-
       - name: Install build & packaging tools
         run: |
           apt update
