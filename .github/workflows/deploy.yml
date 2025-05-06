@@ -35,4 +35,7 @@ jobs:
 
       - name: Push to JFrog
         run: |
-          jf rt u --deb=jammy/main/amd64 ./xbot2_interface-*-x86_64.deb "/ubuntu/pool/main/$(basename ./xbot2_interface-*-x86_64.deb)"
+          DEB_NAME = $(ls ./xbot2_interface-*-x86_64.deb)
+          BASENAME = $(basename "$DEB_NAME")
+          echo "Pushing $DEB_NAME to /ubuntu/pool/main/$BASENAME"
+          jf rt u --deb=jammy/main/amd64 "$DEB_NAME" "/ubuntu/pool/main/$BASENAME"
