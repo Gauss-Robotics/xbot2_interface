@@ -48,11 +48,10 @@ function(export_project)
     ## Packaging
     set(CPACK_PACKAGE_VENDOR "Gauss Robotics GmbH")
     set(CPACK_GENERATOR "DEB;TGZ")
-    set(CPACK_PACKAGE_VERSION 1.0.0)
+    set(CPACK_PACKAGE_DESCRIPTION "XBot2 Interface fork by Gauss Robotics")
     set(CPACK_SYSTEM_NAME ${CMAKE_HOST_SYSTEM_PROCESSOR})
 
     # Debian versions require a dash
-    set(CPACK_DEBIAN_PACKAGE_VERSION ${CPACK_PACKAGE_VERSION}-1)
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Gauss Robotics GmbH")
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-all-dev, ros-${ROS_DISTRO}-srdfdom, ros-${ROS_DISTRO}-pinocchio, ros-${ROS_DISTRO}-tf2-eigen-kdl, ros-${ROS_DISTRO}-hpp-fcl, ros-${ROS_DISTRO}-geometric-shapes, ros-${ROS_DISTRO}-moveit-core")
     include(CPack)
