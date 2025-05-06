@@ -28,14 +28,11 @@ jobs:
           cmake --build build -j$(nproc)
           fakeroot cpack --config build/CPackConfig.cmake -G DEB
 
-      - name: Set up JFrog CLI
-        uses: jfrog/setup-jfrog-cli@v2
-        with:
-          version: latest
+      - name: Login to JFrog
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_ENV_1: ${{ secrets.JFROG_AUTHENTICATION_TOKEN }}
 
-      - name: Configure JFrog CLI
-        run: jfrog config add artifactory --url ${{ secrets.JFROG_URL }} --apikey ${{ secrets.JFROG_API_KEY }} --interactive=false
-
-      - name: Upload Debian package to Artifactory
+      - name: Push to JFrog
         run: |
-          jfrog rt upload "build/*.deb" ${{ secrets.JFROG_REPO }}/${{ env.PROJECT_VERSION }}/
+          jf rt u --deb=jammy/main/amd64 ./xbot2_interface-*-x86_64.deb "/ubuntu/pool/main/$(basename ./xbot2_interface-*-x86_64.deb)"
