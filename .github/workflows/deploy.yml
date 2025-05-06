@@ -12,7 +12,7 @@ jobs:
       image: ros:jazzy
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       # We don't version control xbot2, this is just a public fork. However, for
