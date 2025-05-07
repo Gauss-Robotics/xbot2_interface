@@ -11,7 +11,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:          
           token: ${{ secrets.REMOTE_TRIGGER_PACKAGING }}
-          repository: github.com/Gauss-Robotics/cros-repo-TINKER
+          repository: Gauss-Robotics/cros-repo-TINKER
           event-type: do-this
           client-payload: |
             {
