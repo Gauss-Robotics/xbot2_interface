@@ -4,38 +4,19 @@ on:
   push:
     branches:
       - master
-  workflow_dispatch:
 
 jobs:
-  build-and-publish:
+  dispatch:
     runs-on: ubuntu-24.04
-    container:
-      image: ros:jazzy
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Install build & packaging tools
-        run: |
-          apt update
-          apt install -y ros-jazzy-srdfdom ros-jazzy-pinocchio ros-jazzy-geometric-shapes ros-jazzy-moveit-core fakeroot
-
-      - name: Configure CMake, Build and (C)Pack for DEB
-        run: |
-          . /opt/ros/jazzy/setup.sh
-          cmake -S . -B build -DXBOT2_IFC_BUILD_COLLISION=OFF
-          cmake --build build -j$(nproc)
-          fakeroot cpack --config build/CPackConfig.cmake -G DEB
-
-      - name: Login to JFrog
-        uses: jfrog/setup-jfrog-cli@v4
-        env:
-          JF_ENV_1: ${{ secrets.JFROG_AUTHENTICATION_TOKEN }}
-
-      - name: Push to JFrog
-        run: |
-          DEB_NAME=$(ls ./xbot2_interface-*-x86_64.deb)
-          BASENAME=$(basename "$DEB_NAME")
-          echo "Pushing $DEB_NAME to /ubuntu/pool/main/$BASENAME"
-          jf rt u --deb=jammy/main/amd64 "$DEB_NAME" "/ubuntu/pool/main/$BASENAME"
+      - name: Send push notification to packaging workflow
+        uses: peter-evans/repository-dispatch@v3.0.0
+        with:
+          token: ${{ secrets.REMOTE_TRIGGER_PACKAGING }}
+          repository: Gauss-Robotics/opensot-packager
+          event-type: rebuilt-xbot
+          client-payload: |
+            {
+              "ref": "${{ github.ref }}",
+              "sha": "${{ github.sha }}"
+            }
