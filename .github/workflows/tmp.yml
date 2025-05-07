@@ -11,7 +11,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           ## PAT with repo scope stored in repo-a secrets
-          ## token: ${{ secrets.REPO_B_ACCESS_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }
           repository: Gauss-Robotics/cros-repo-TINKER
           event-type: do-this
           client-payload: |
