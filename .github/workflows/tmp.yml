@@ -9,8 +9,7 @@ jobs:
     steps:
       - name: Send repository dispatch to cros-repo-TINKER
         uses: peter-evans/repository-dispatch@v3
-        with:
-          ## PAT with repo scope stored in repo-a secrets
+        with:          
           token: ${{ secrets.REMOTE_TRIGGER_PACKAGING }}
           repository: Gauss-Robotics/cros-repo-TINKER
           event-type: do-this
