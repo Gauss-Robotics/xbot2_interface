@@ -11,6 +11,15 @@ using namespace XBot;
 namespace py = pybind11;
 using rvp = py::return_value_policy;
 
+template <typename _Matrix_Type_>
+_Matrix_Type_ pinv_SVD(const _Matrix_Type_& a, double epsilon = std::numeric_limits<double>::epsilon())
+{
+    Eigen::JacobiSVD<_Matrix_Type_> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    double tolerance = epsilon * std::max(a.cols(), a.rows()) * svd.singularValues().array().abs()(0);
+    return svd.matrixV() * (svd.singularValues().array().abs() > tolerance).select(
+        svd.singularValues().array().inverse(), 0).matrix().asDiagonal() * svd.matrixU().adjoint();
+}
+
 PYBIND11_MODULE(pyxbot2_interface, m) {
 
     py::class_<ControlMode> controlMode(m, "ControlMode");
@@ -141,7 +150,7 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
         .def("getPose",
              py::overload_cast<string_const_ref>(&XBotInterface::getPose, py::const_))
         .def("getPose",
-             py::overload_cast<string_const_ref,string_const_ref>(&XBotInterface::getPose, py::const_))
+             py::overload_cast<string_const_ref, string_const_ref>(&XBotInterface::getPose, py::const_))
         .def("getAccelerationTwist",
              py::overload_cast<string_const_ref>(&XBotInterface::getAccelerationTwist, py::const_))
         .def("getVelocityTwist",
@@ -266,6 +275,8 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
         .def_property("tau",
                       py::overload_cast<>(&ModelInterface::getJointEffort, py::const_),
                       py::overload_cast<VecConstRef>(&ModelInterface::setJointEffort))
+        .def("getInverseJacobian",
+             [](const ModelInterface& self, const std::string& link_id) { return pinv_SVD(self.getJacobian(link_id)); })
         ;
 
     py::class_<RobotInterface, XBotInterface, RobotInterface::Ptr>(m, "RobotInterface2")
