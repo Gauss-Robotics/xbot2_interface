@@ -26,10 +26,13 @@ public:
     Eigen::Affine3d getPose(int link_id) const override;
 
     void getJacobian(int link_id, MatRef J) const override;
+    void getJacobianInWorld(int link_id, MatRef J) const override;
 
     Eigen::Vector6d getVelocityTwist(int link_id) const override;
+    Eigen::Vector6d getVelocityTwistInWorld(int link_id) const override;
 
     Eigen::Vector6d getAccelerationTwist(int link_id) const override;
+    Eigen::Vector6d getAccelerationTwistInWorld(int link_id) const override;
 
     Eigen::Vector6d getJdotTimesV(int link_id) const override;
 

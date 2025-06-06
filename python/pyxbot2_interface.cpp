@@ -153,8 +153,12 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
              py::overload_cast<string_const_ref, string_const_ref>(&XBotInterface::getPose, py::const_))
         .def("getAccelerationTwist",
              py::overload_cast<string_const_ref>(&XBotInterface::getAccelerationTwist, py::const_))
+        .def("getAccelerationTwistInWorld",
+             py::overload_cast<string_const_ref>(&XBotInterface::getAccelerationTwistInWorld, py::const_))
         .def("getVelocityTwist",
              py::overload_cast<string_const_ref>(&XBotInterface::getVelocityTwist, py::const_))
+        .def("getVelocityTwistInWorld",
+             py::overload_cast<string_const_ref>(&XBotInterface::getVelocityTwistInWorld, py::const_))
         .def("getJdotTimesV",
              py::overload_cast<string_const_ref>(&XBotInterface::getJdotTimesV, py::const_))
         .def("getCOM",
@@ -169,6 +173,8 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
              py::overload_cast<string_const_ref, string_const_ref>(&XBotInterface::getRelativeJdotTimesV, py::const_))
         .def("getJacobian",
              py::overload_cast<string_const_ref>(&XBotInterface::getJacobian, py::const_))
+        .def("getJacobianInWorld",
+             py::overload_cast<string_const_ref>(&XBotInterface::getJacobianInWorld, py::const_))
         .def("getRelativeJacobian",
              py::overload_cast<string_const_ref, string_const_ref>(&XBotInterface::getRelativeJacobian, py::const_))
         .def("computeInverseDynamics",
@@ -277,6 +283,8 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
                       py::overload_cast<VecConstRef>(&ModelInterface::setJointEffort))
         .def("getInverseJacobian",
              [](const ModelInterface& self, const std::string& link_id) { return pinv_SVD(self.getJacobian(link_id)); })
+        .def("getInverseJacobianInWorld",
+             [](const ModelInterface& self, const std::string& link_id) { return pinv_SVD(self.getJacobianInWorld(link_id)); })
         ;
 
     py::class_<RobotInterface, XBotInterface, RobotInterface::Ptr>(m, "RobotInterface2")

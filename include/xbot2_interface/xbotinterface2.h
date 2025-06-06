@@ -210,6 +210,8 @@ public:
     // absolute
     virtual void getJacobian(int link_id,
                              MatRef J) const = 0;
+    virtual void getJacobianInWorld(int link_id,
+                             MatRef J) const = 0;
 
     bool getJacobian(string_const_ref link_name,
                      MatRef J) const;
@@ -226,6 +228,7 @@ public:
                      Eigen::MatrixXd& J) const;
 
     Eigen::MatrixXd getJacobian(string_const_ref link_name) const;
+    Eigen::MatrixXd getJacobianInWorld(string_const_ref link_name) const;
 
     // relative
     virtual void getRelativeJacobian(int distal_id,
@@ -271,12 +274,16 @@ public:
                         Eigen::Affine3d& b_R_l) const;
 
     // velocity twist (absolute)
-    virtual Eigen::Vector6d getVelocityTwist(int link_id) const;
-
     Eigen::Vector6d getVelocityTwist(string_const_ref link_name) const;
+
+    virtual Eigen::Vector6d getVelocityTwist(int link_id) const;
 
     bool getVelocityTwist(string_const_ref link_name,
                           Eigen::Vector6d& v) const;
+
+    // velocity twist (absolute) in global
+    Eigen::Vector6d getVelocityTwistInWorld(string_const_ref link_name) const;
+    virtual Eigen::Vector6d getVelocityTwistInWorld(int link_id) const = 0;
 
     // acceleration twist (absolute)
     virtual Eigen::Vector6d getAccelerationTwist(int link_id) const;
@@ -285,6 +292,10 @@ public:
 
     bool getAccelerationTwist(string_const_ref link_name,
                               Eigen::Vector6d& a) const;
+
+    // acceleration twist (absolute) in global
+    Eigen::Vector6d getAccelerationTwistInWorld(string_const_ref link_name) const;
+    virtual Eigen::Vector6d getAccelerationTwistInWorld(int link_id) const = 0;
 
     //
     virtual Eigen::Vector6d getJdotTimesV(int link_id) const;
