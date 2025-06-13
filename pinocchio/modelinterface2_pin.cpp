@@ -390,9 +390,7 @@ Eigen::Vector6d XBot::ModelInterface2Pin::getVelocityTwistInWorld(int frame_idx)
 {
     check_frame_idx_throw(frame_idx);
 
-    auto v = pinocchio::getFrameVelocity(_mdl, _data, frame_idx, pinocchio::ReferenceFrame::WORLD);
-
-    return v;
+    return pinocchio::getFrameVelocity(_mdl, _data, frame_idx, pinocchio::ReferenceFrame::WORLD);
 }
 
 Eigen::Vector6d ModelInterface2Pin::getAccelerationTwist(int frame_idx) const
@@ -406,9 +404,7 @@ Eigen::Vector6d XBot::ModelInterface2Pin::getAccelerationTwistInWorld(int frame_
 {
     check_frame_idx_throw(frame_idx);
 
-    auto v = pinocchio::getFrameClassicalAcceleration(_mdl, _data, frame_idx, pinocchio::ReferenceFrame::WORLD);
-
-    return v;
+    return pinocchio::getFrameClassicalAcceleration(_mdl, _data, frame_idx, pinocchio::ReferenceFrame::WORLD);
 }
 
 Eigen::Vector6d ModelInterface2Pin::getJdotTimesV(int frame_idx) const
