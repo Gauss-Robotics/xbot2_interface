@@ -115,6 +115,21 @@ void ModelInterface2Pin::getJacobian(int link_id, MatRef J) const
     pinocchio::getFrameJacobian(_mdl, _data, link_id, _world_aligned, J);
 }
 
+void ModelInterface2Pin::getJacobianInWorld(int link_id, MatRef J) const
+{
+    check_frame_idx_throw(link_id);
+
+    if(!(_cached_computation & Jacobians))
+    {
+        pinocchio::computeJointJacobians(_mdl, _data, getJointPosition());
+        _cached_computation |= Jacobians;
+    }
+
+    J.setZero();
+
+    pinocchio::getFrameJacobian(_mdl, _data, link_id, pinocchio::ReferenceFrame::WORLD, J);
+}
+
 
 MatConstRef ModelInterface2Pin::computeRegressor() const
 {
@@ -371,11 +386,25 @@ Eigen::Vector6d XBot::ModelInterface2Pin::getVelocityTwist(int frame_idx) const
     return v;
 }
 
+Eigen::Vector6d XBot::ModelInterface2Pin::getVelocityTwistInWorld(int frame_idx) const
+{
+    check_frame_idx_throw(frame_idx);
+
+    return pinocchio::getFrameVelocity(_mdl, _data, frame_idx, pinocchio::ReferenceFrame::WORLD);
+}
+
 Eigen::Vector6d ModelInterface2Pin::getAccelerationTwist(int frame_idx) const
 {
     check_frame_idx_throw(frame_idx);
 
     return pinocchio::getFrameClassicalAcceleration(_mdl, _data, frame_idx, _world_aligned);
+}
+
+Eigen::Vector6d XBot::ModelInterface2Pin::getAccelerationTwistInWorld(int frame_idx) const
+{
+    check_frame_idx_throw(frame_idx);
+
+    return pinocchio::getFrameClassicalAcceleration(_mdl, _data, frame_idx, pinocchio::ReferenceFrame::WORLD);
 }
 
 Eigen::Vector6d ModelInterface2Pin::getJdotTimesV(int frame_idx) const

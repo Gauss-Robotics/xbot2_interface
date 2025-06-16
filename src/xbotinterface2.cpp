@@ -1078,6 +1078,19 @@ Eigen::MatrixXd XBotInterface::getJacobian(string_const_ref link_name) const
     return J;
 }
 
+Eigen::MatrixXd XBotInterface::getJacobianInWorld(string_const_ref link_name) const
+{
+    Eigen::MatrixXd J;
+
+    J.setZero(6, getNv());
+
+    int idx = impl->get_link_id_throw(link_name);
+
+    getJacobianInWorld(idx, J);
+
+    return J;
+}
+
 
 void XBotInterface::getRelativeJacobian(int distal_id, int base_id, MatRef Jrel) const
 {
@@ -1247,6 +1260,11 @@ Eigen::Vector6d XBotInterface::getVelocityTwist(string_const_ref link_name) cons
     return getVelocityTwist(impl->get_link_id_throw(link_name));
 }
 
+Eigen::Vector6d XBotInterface::getVelocityTwistInWorld(string_const_ref link_name) const
+{
+    return getVelocityTwistInWorld(impl->get_link_id_throw(link_name));
+}
+
 bool XBotInterface::getVelocityTwist(string_const_ref link_name, Eigen::Vector6d &v) const
 {
     int idx = impl->get_link_id_error(link_name);
@@ -1272,6 +1290,11 @@ Eigen::Vector6d XBotInterface::getAccelerationTwist(int link_id) const
 Eigen::Vector6d XBotInterface::getAccelerationTwist(string_const_ref link_name) const
 {
     return getAccelerationTwist(impl->get_link_id_throw(link_name));
+}
+
+Eigen::Vector6d XBotInterface::getAccelerationTwistInWorld(string_const_ref link_name) const
+{
+    return getAccelerationTwistInWorld(impl->get_link_id_throw(link_name));
 }
 
 bool XBotInterface::getAccelerationTwist(string_const_ref link_name, Eigen::Vector6d &v) const
