@@ -8,8 +8,18 @@ if(${pybind11_FOUND} AND ${COMPILE_PYTHON_BINDINGS})
 
     message(STATUS "Found python (${Python3_EXECUTABLE}) will compile python bindings")
 
+    # Check if we install into system pathes ( something /usr/* )
+    # In Debian/Ubuntu site-packages are named dist-packages there
+    # Otherwise install as site-packages
+    string(REGEX MATCH "^/usr/" IS_ROOT_USR_PATH ${CMAKE_INSTALL_PREFIX})
+    if("${IS_ROOT_USR_PATH}" STREQUAL "/usr/")
+        set(SITE_DIRECTORY_NAME "dist-packages")
+    else()
+        set(SITE_DIRECTORY_NAME "site-packages")
+    endif()
+
     # get python install path
-    set(PYTHON_SITE "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/dist-packages")
+    set(PYTHON_SITE "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/${SITE_DIRECTORY_NAME}")
     message(STATUS "Python install dir: ${PYTHON_SITE}")
 
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
