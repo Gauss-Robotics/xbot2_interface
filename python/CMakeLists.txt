@@ -29,6 +29,8 @@ if(${pybind11_FOUND} AND ${COMPILE_PYTHON_BINDINGS})
 
     target_link_libraries(pyxbot2_interface PUBLIC xbot2_interface)
 
+    set_target_properties(pyxbot2_interface PROPERTIES INSTALL_RPATH "$ORIGIN/../../..")
+
     install(TARGETS pyxbot2_interface
         DESTINATION ${PYTHON_SITE}/xbot2_interface)
 
@@ -36,6 +38,8 @@ if(${pybind11_FOUND} AND ${COMPILE_PYTHON_BINDINGS})
     pybind11_add_module(pyaffine3 pyaffine3.cpp)
 
     target_link_libraries(pyaffine3 PUBLIC Eigen3::Eigen)
+    
+    set_target_properties(pyaffine3 PROPERTIES INSTALL_RPATH "$ORIGIN/../../..")
 
     install(TARGETS pyaffine3
         DESTINATION ${PYTHON_SITE}/xbot2_interface)
@@ -44,6 +48,8 @@ if(${pybind11_FOUND} AND ${COMPILE_PYTHON_BINDINGS})
         pybind11_add_module(pyxbot2_collision pyxbot2_collision.cpp)
 
         target_link_libraries(pyxbot2_collision PUBLIC xbot2_interface::collision)
+        
+        set_target_properties(pyxbot2_collision PROPERTIES INSTALL_RPATH "$ORIGIN/../../..")
 
         install(TARGETS pyxbot2_collision
             DESTINATION ${PYTHON_SITE}/xbot2_interface)
