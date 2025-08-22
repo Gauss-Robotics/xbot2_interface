@@ -417,3 +417,6 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
     py::class_<ModelJoint, Joint, ModelJoint::Ptr>(m, "ModelJoint", py::multiple_inheritance());
 
     py::class_<RobotJoint, Joint, RobotJoint::Ptr>(m, "RobotJoint", py::multiple_inheritance());
+
+}
+
