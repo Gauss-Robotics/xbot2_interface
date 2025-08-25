@@ -181,7 +181,7 @@ void LoggerClass::DefaultOnPrint(char *msg, int n_chars, Logger::Severity s)
 LoggerClass::LoggerClass(std::string name)
     : _endl(*this)
     , _name(name)
-    , _verbosity_level(Logger::Severity::LOW)
+    , _verbosity_level(Logger::Severity::FATAL)
     , _severity(Logger::Severity::LOW)
     , _on_print(&LoggerClass::DefaultOnPrint)
 {

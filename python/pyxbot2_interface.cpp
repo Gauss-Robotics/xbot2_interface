@@ -1,4 +1,5 @@
 #include <xbot2_interface/robotinterface2.h>
+#include <xbot2_interface/logger.h>
 #include <xbot2_interface/common/utils.h>
 
 #include <pybind11/pybind11.h>
@@ -408,8 +409,14 @@ PYBIND11_MODULE(pyxbot2_interface, m) {
         .def("getChildLink", &Joint::getChildLink)
         ;
 
+    py::class_<Logger, std::shared_ptr<Logger>>(m, "Logger")
+        .def_static("set_verbosity_level_to_fatal", [](){ Logger::SetVerbosityLevel(Logger::Severity::FATAL); })
+        .def_static("set_verbosity_level_to_low", [](){ Logger::SetVerbosityLevel(Logger::Severity::LOW); })
+        ;
+
     py::class_<ModelJoint, Joint, ModelJoint::Ptr>(m, "ModelJoint", py::multiple_inheritance());
 
     py::class_<RobotJoint, Joint, RobotJoint::Ptr>(m, "RobotJoint", py::multiple_inheritance());
 
 }
+
